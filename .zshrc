@@ -175,4 +175,9 @@ export EMAIL="vincent.cuissard@gmail.com"
 export EDITOR=emacs
 
 # Add SSH Key
-ssh-add -K
+SSH_ADD_OPT=
+if [ `uname` = "Darwin" ]; then
+    echo "Darwin"
+    SSH_ADD_OPT="-K"
+fi
+ssh-add $SSH_ADD_OPT
