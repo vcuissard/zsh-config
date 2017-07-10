@@ -1,0 +1,341 @@
+#!/bin/zsh
+## fonctions for  in /Users/reeb
+##
+## Made by Vincent Cuissard
+## Mail    <vincent.cuissard@gmail.com>
+##
+## Started on  Tue Jun  3 22:24:34 2003 Vincent Cuissard
+## Last update Sun Jan 25 13:22:34 2009 reeb
+##
+
+function setprompt { #
+    export PROMPT="%{$COLOR3%}[%{$STATUS_WR%}Status%{$COLOR3%} (%{$STATUS_COLOR%}%?%{$COLOR3%})%{$COLOR1%} %{$COLOR3%}-%{$COLOR1%} %~%{$COLOR3%}]%{$COLOR1%}
+%{$COLOR3%}[%{$LOGIN_COLOR%}%n%{$COLOR3%}@%{$HOST_COLOR%}%m%{$COLOR3%}]%{$COLOR1%} %{$COLOR2%}%%%{$COLOR1%}%{$COLOR4%} "
+
+    export RPROMPT="%{[A%}%{$COLOR3%}[%{$COLOR1%}%D{%H:%M:%S}%{$COLOR3%}/%{$COLOR1%}%D{%d-%m-%Y}%{$COLOR3%}]%{$COLOR4%}%{[B%}"
+    export PROMPT2="%{$COLOR3%}[%{$COLOR1%}%(#.#.$)%{$COLOR3%}]%{$COLOR4%} "
+    export SPROMPT="%{$COLOR3%}[%{$COLOR1%}correct%{$COLOR3%}[%{$COLOR1%}'%R'%{$COLOR3%}]%{$COLOR1%}->%{$COLOR3%}[%{$COLOR1%}'%r'%{$COLOR3%}]] [%{$COLOR1%}n%{$COLOR3%}/%{$COLOR1%}y%{$COLOR3%}/%{$COLOR1%}a%{$COLOR3%}/%{$COLOR1%}e%{$COLOR3%}]%{$COLOR4%} "
+}
+
+function c1 {
+    export COLOR1="[0;31m"
+    export COLOR2="[1;31m"
+    export COLOR3="[1;30m"
+    export COLOR4="[0;0m"
+    setprompt
+}
+
+function c2 {
+    export COLOR1="[0;32m"
+    export COLOR2="[1;32m"
+    export COLOR3="[1;30m"
+    export COLOR4="[0;0m"
+    setprompt
+}
+
+function c3 {
+    export COLOR1="[0;33m"
+    export COLOR2="[1;33m"
+    export COLOR3="[1;30m"
+    export COLOR4="[0;0m"
+    setprompt
+}
+function c4 {
+    export COLOR1="[0;34m"
+    export COLOR2="[1;34m"
+    export COLOR3="[1;30m"
+    export COLOR4="[0;0m"
+    setprompt
+}
+
+function c5 {
+    export COLOR1="[0;35m"
+    export COLOR2="[1;35m"
+    export COLOR3="[1;30m"
+    export COLOR4="[0;0m"
+    setprompt
+}
+
+function c6 {
+    export STATUS_WR="[4;37m"
+    export STATUS_COLOR="[1;33m"
+    export LOGIN_COLOR="[0;40m"
+    export HOST_COLOR="[1;37m"
+    export COLOR1="[0;37m"
+    export COLOR2="[0;33m"
+    export COLOR3="[0;31m"
+    export COLOR4="[0;0m"
+    setprompt
+}
+
+function c7 {
+    export COLOR1="[0;37m"
+    export COLOR2="[1;37m"
+    export COLOR3="[1;30m"
+    export COLOR4="[0;0m"
+    setprompt
+}
+
+function title () {
+    [[ -t 1 ]] || return #
+    echo -n '\033]0;'$*'\007'
+    case $TERM in
+	sun-cmd)
+	    print -Pn "\e]l$*\e\\" ;;
+    xterm*|rxvt)
+	    print -Pn "\e]2;$*\a" ;;
+    esac
+}
+
+function set_title () {
+    local num title
+    case "$1" in
+	window)
+	    num=2
+	    ;;
+	icon)
+	    num=1
+	    ;;
+	*)
+	    print "Usage: set_title ( window | title ) <title>"
+	    return 1
+        ;;
+    esac
+    title="$2"
+    if [[ "$TERM" == 'linux' ]]; then
+	print "Cannot currently display $1 title; only remembering value set."
+    else
+	print -Pn "\e]$num;$title\a"
+    fi
+}
+
+function cx () {
+    local long_host short_host title_host short_from_opts
+    long_host=${HOST}
+    short_host=${HOST%%.*}
+    if [[ "$1" == "-s" ]]
+	then short_from_opts=yes shift
+    fi
+    if [[ ${+CX_SHORT_HOSTNAMES} -eq 1 || "$short_from_opts" == "yes" ]] ; then
+	title_host=$short_host
+    else
+	title_host=$long_host
+    fi
+    if [[ "$USER" != "$USERNAME" ]]; then
+	unset TITLE ITITLE
+    fi
+    if [[ -z "$*" ]]; then
+	${TITLE="$USERNAME@${title_host}" }
+        set_title window "$TITLE"
+	${ITITLE="$USERNAME@${short_host}" }
+        set_title icon "$ITITLE"
+    else
+	TITLE="$USERNAME@${title_host} $*"
+	set_title window "$TITLE"
+	ITITLE="$* @ $USERNAME@${short_host}"
+	set_title icon "$ITITLE"
+    fi
+}
+
+function cxx () {
+    unset TITLE ITITLE
+    cx
+}
+
+if [[ "$TERM" == xterm* || "$TERM" == rxvt ]] ; then
+    chpwd () { #
+	cx  "[ tty%l ]" #
+    }
+    function mycx () {
+        cx  '[ tty%l ]'
+    }
+    mycx
+
+    function dist_login () {
+	local command command =$1
+	shift
+	OLDTERM=${TERM}
+        TERM=xterm command ${ command }"$@"
+	ret=$?
+        TERM=${OLDTERM}
+	unset OLDTERM
+        mycx
+	return $?
+    }
+fi
+
+function call_epelle {
+    for i in *.tex
+      do
+      epelle -latex -8bit $i
+    done | sort | uniq -c | sort -n | less
+}
+function getNewsArticle () {
+    ( echo "article $1" echo QUIT ) | nc news nntp
+}
+
+function backup_file () {
+    while test $# -gt 0 ; do
+	file=$1
+	shift
+	basebackup="${file}.`date +%Y%m%d`"
+	backup=${basebackup}
+        indice=1
+	while test -f $backup ; do
+	    backup=`printf "%s%02d" $basebackup $indice`
+            indice=`expr $indice + 1`
+	done
+	cp $file $backup
+    done
+}
+
+function debian () {
+    cat ~/.zsh/debian.logo
+}
+
+function mac () {
+    if [ $# -gt 0 ]; then
+	cat ~/.zsh/macs.logo
+    else
+	cat ~/.zsh/mac.logo
+    fi
+}
+
+function cow () {
+    cat ~/.zsh/cow.logo
+}
+
+function asc () {
+    cat ~/.zsh/.green
+    if [ $# -gt 0 ]; then
+	figlet -c $1
+    else
+	figlet -c MacOSX/Jaguar\On `hostname -s`
+    fi
+}
+
+function ping () {
+    if [ $# -gt 0 ]; then
+	echo "" >> ~/.known_ping
+	tst=`echo $1 |grep "-"`
+	if [ -z $tst  ]; then
+	    echo $1 >> ~/.known_ping
+	fi
+	/bin/ping $*
+    else
+	/bin/ping -h
+    fi
+}
+
+function ftp () {
+   if [ $# -gt 0 ]; then
+	echo "" >> ~/.known_ftp
+	echo $1 >> ~/.known_ftp
+	/usr/bin/ftp $*
+   else
+       /usr/bin/ftp
+   fi
+}
+
+function chk_connec () {
+    ping -c 1 www.google.fr > /dev/null &> .logping
+    chk=`cat .logping |grep ping:`
+    rm .logping
+
+    if [ -z $chk ]; then
+	echo "Internet Connection := Up"
+    else
+	echo "Internet Connection := Down"
+    fi
+}
+
+function print_network () {
+    case "`uname`" in
+	Darwin|FreeBSD|NetBSD)
+	    interface="en"
+	    ;;
+	*)
+	    interface="eth"
+	    ;;
+    esac
+    function get_ip () {
+	if [ $# -gt 0 ]; then
+	    src=`ifconfig $1 &> /dev/null |grep "inet.*netmask"`
+	    fst=${src#*inet?}
+	    snd=${fst%%?netmask*}
+	    echo "   \t$1 := $snd"
+	fi
+    }
+    get_ip lo0
+    get_ip $interface"0"
+    get_ip $interface"1"
+}
+
+function is_down () {
+    if [ $# -eq 1 ]; then
+	ping -c 1 -i 1 $1 > .logping &> .logping
+	isdown=$(cat .logping |grep ping:)
+
+	if [ -z $isdown ]; then
+	    isdown=$(cat .logping |grep time)
+	    val=${isdown##*time=}
+	    echo "   \tIs Down ($1) := OK. ($val)"
+	else
+	    echo "   \tIs Down ($1) := Down"
+	fi
+	rm .logping
+    fi
+}
+
+function analyse_top () {
+    top=`top -ln`
+    cpu=${top##*CPU usage:\ \ }
+    cuser=${cpu%%user*}
+    csys=${cpu%%sys*}
+    csys=${csys##*user,\ }
+    cidle=${cpu%%idle*}
+    cidle=${cidle##*sys,\ }
+    echo "          \tUser : "$cuser
+    echo "          \tSys  : "$csys
+    echo "          \tIdle : "$cidle
+}
+
+function is_run () {
+    function look_run () {
+	echo -n "   \t\t$2\t:= "
+	ps=$(ps aux |grep $1)
+	ps=${ps#*$1}
+	if [ -z $(echo $ps |grep $1) ]; then
+	    echo "No"
+	else
+	    echo "Yes"
+	fi
+    }
+    look_run ftp Ftp
+    look_run ssh Ssh
+    look_run httpd Apache
+    look_run iTunes iTunes
+}
+
+function pr_cl () {
+    cat ~/.zsh/.$1
+}
+
+function stats () {
+    pr_cl red
+    echo "Statistics:"
+    pr_cl green
+    echo "   Network:"
+    echo -n "   \t"
+    pr_cl yellow
+    chk_connec
+    print_network
+    pr_cl green
+    echo "   System:"
+    pr_cl yellow
+    echo "   \tUsage:"
+    analyse_top
+    echo "   \tRunning:"
+    is_run
+    echo ""
+}

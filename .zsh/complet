@@ -1,0 +1,276 @@
+#! /bin/zsh
+
+autoload mere zed zfinit
+
+zmodload zsh/complist
+bindkey m menu-select
+
+autoload incremental-complete-word
+zle -N incremental-complete-word
+bindkey i incremental-complete-word
+
+autoload insert-files
+zle -N insert-files
+bindkey j insert-files
+
+
+compctl_whoson () { typeset -U reply2
+        reply2=( `users` )
+        reply=( $reply2 )
+}
+
+compctl_dummy () {
+        reply=( $1 )
+}
+
+compctl_glob_files_dirs_links () { 
+    local dirs files files2 links link2 dirs =( $1*(/NM) )
+    files=( $1$2(NM) )
+    links=( $1*(@NM) )
+    files2=( ${^files} " " )
+    links2=( ${^links} "/" )
+    reply=( ${ dirs :-''} ${links2:-''} ${files:-''} )
+}
+
+compctl_spec () {
+    compctl_glob_files_dirs_links ${1:-''} "*.spec" }
+
+compctl_http () {
+    compctl_glob_files_dirs_links ${1:-''} "*.(htm|html)" }
+
+compctl_rpm () {
+    compctl_glob_files_dirs_links ${1:-''} "*.rpm" }
+
+compctl_pack () { 
+    local dirs links link2 dirs =( /PACK/$1*(/NM) )
+    links=( /PACK/$1*(@NM) )
+    dirs2=( ${^dirs#/PACK/} ) 
+    links2=( ${^links#/PACK/}"/" )
+    reply=( ${dirs2:-''} ${links2:-''} )
+} 
+
+compctl -k usernames -K compctl_whoson -S '@' -q -x 'C[0,newc????]' \
+    -K compctl_dummy -S '@sable.ox.ac.uk' - 'n[-1,@]' \
+    -k hostnames -- finger f 
+
+compctl -k usernames -K compctl_whoson -S '@' -q -x 'C[0,newc????]' \
+    -K compctl_dummy -S '@sable.ox.ac.uk' - 'p[1] S[-]' -k '(-x)' \
+    - 'n[-1,@]' -k hostnames - 'p[3,-1] W[1,-*],p[2] W[1,^-*]' \
+    -k '(&)' -Q -- ytalk 
+
+compctl -K compctl_whoson last lh write compctl -x 's[-],p[1]' -k '(aux auxww xu xuw afx)' -- ps compctl -z -P '%' bg compctl -j -P '%' fg jobs disown 
+
+compctl -j -P '%' + -s '`ps -x | tail +2 | cut -c1-5`' wait 
+
+compctl -k hostnames ping t telnet ncftp ftp host nslookup rup rusers \
+    irc epic BitchX bitchx bx dns 
+
+compctl -K compctl_http -Q -S '' -k hostnames lynx netscape compctl -k hostnames -x 'p[2,-1]' -l '' -- rsh 
+
+compctl -k hostnames -x 'c[-1,-l]' -k usernames -- rlogin 
+
+compctl -k hostnames -x 'c[-1,-l]' -k usernames -- \
+        + -k usernames -S '@' -x 'n[1,@]' -k hostnames -- ssh 
+
+compctl -g '*.(mp3|MP3)' + -g '*(-/)' mp3 amp mpg123 x11amp replay compctl -g '*.(mod|MOD)' + -g '*(-/)' mod mikmod 
+
+compctl -g '*.(mid|MID)' + -g '*(-/)' mid playmidi drvmidi 
+
+compctl -g '*.(jpg|JPG|jpeg|JPEG|gif|GIF|png|tif)' + -g '*(-/)' \
+        zgv qiv xv seejpeg ee 
+
+compctl -x 'n[1,:]' -f - \
+    'n[1,@]' -k hostnames -S ':' - \
+    'p[1] W[2,*:*]' -f - \
+    'p[2] W[1,*:*]' -f -- \
+    + -k usernames -S '@' \
+    + -K whoson -S '@' -u -S '@' \
+    + -k hostnames -S ':' \
+    + -f \
+    rcp scp 
+
+compctl -a alias unalias compctl -g '*(-/)'  md mkdir rd rmdir 
+
+compctl -g '*(-/)' cd chdir dirs pushd 
+
+compctl -v getln getopts read unset vared compctl -E export 
+
+compctl -c which compctl -l '' sudo compctl -A shift compctl -c type whence where which 
+
+compctl -m -x 'W[1,-*d*]' -n - 'W[1,-*a*]' -a - 'W[1,-*f*]' -F -- unhash 
+
+compctl -m -q -S '=' -x 'W[1,-*d*] n[1,=]' -g '*(-/)' - \
+        'W[1,-*d*]' -n -q -S '=' - 'n[1,=]' -g '*(*)' -- hash 
+
+compctl -F functions unfunction 
+
+compctl -k '(al dc dl do le up al bl cd ce cl cr dc dl do ho is le ma nd nl se so up)' echotc 
+
+compctl -v -S '=' -q declare export integer local readonly typeset 
+
+compctl -eB -x 'p[1] s[-]' -k '(a f m r)' - \
+        'C[1,-*a*]' -ea - 'C[1,-*f*]' -eF - 'C[-1,-*r*]' -ew -- disable 
+
+compctl -dB -x 'p[1] s[-]' -k '(a f m r)' - \
+        'C[1,-*a*]' -da - 'C[1,-*f*]' -dF - 'C[-1,-*r*]' -dw -- enable 
+
+compctl -k "(${(j: :)${(f)$(limit)}%% *})" limit unlimit 
+
+compctl -l '' -x 'p[1]' -f -- . source compctl -s '$( setopt 2>/dev/null)' + -o + -x 's[no]' -o -- unsetopt 
+
+compctl -s '$( unsetopt )' + -o + -x 's[no]' -o -- setopt 
+
+compctl -s '${^ fpath }/*(N :t)' autoload 
+
+compctl -b bindkey 
+
+compctl -c -x 'C[-1,-*k]' -A - 'C[-1,-*K]' -F - 'C[-1,-*L]' \
+ -s '$( compctl -L | grep -vE "^compctl -[CDT]" | awk "{print \$NF}" )' \
+        -- compctl
+
+compctl -x 'C[-1,-*e]' -c - 'C[-1,-[ARWI] ##]' -f -- fc 
+
+compctl -x 'p[1]' - 'p[2,-1]' -l '' -- sched 
+
+compctl -x 'C[-1,[+-]o]' -o - 'c[-1,-A]' -A -- set 
+
+compctl -l '' nohup noglob exec nice eval -time rusage 
+
+compctl -l '' -x 'p[1]' -eB -- builtin 
+
+compctl -l '' -x 'p[1]' -em -- command 
+
+compctl -x 'p[1]' -c - 'p[2,-1]' -k signals -- trap 
+
+compctl -j -P '%' + -s '`ps x | tail +2 | cut -c1-5`' + \
+        -x 's[-] p[1]' -k "($signals[1,-3])" -- kill 
+
+compctl -j -P '%' + -s '`ps xhc | cut -c21-50`' + \
+        -x 's[-] p[1]' -k "($signals[1,-3])" -- killall 
+
+compctl -s '$(groups)' + -k groups newgrp mp 
+
+compctl -f -x 'p[1], p[2] C[-1,-*]' -k groups -- chgrp 
+
+compctl -f -x 'p[1] n[-1,.][-1,:], p[2] C[-1,-*] n[-1,.][-1,:]' \
+        -k groups - 'p[1], p[2] C[-1,-*]' -u -S ':' -q -- chown 
+
+compctl -f -x 'p[1]' -k '(600 644 700 755 1775 4775 -R)' - \
+        'p[2] w[1,-R]' -k '(600 644 700 755 1775 4775)' - 'p[2] s[-]' \
+        -k '(R)' -- chmod 
+
+compctl -c -x 's[-]' -k '(M P S a c d D f k K w W)' + -f -- man 
+
+compctl -k usernames edquota # installation ancienne ou RH ? 
+
+if [ -d "/usr/lib/kbd" -o -L "/usr/lib/kbd" ]
+then 
+    compctl -g '/usr/lib/kbd/keytables/*(:t)' 
+    loadkeys 
+    compctl -g '/usr/lib/kbd/consolefonts/*(:t)'
+    setfont # D3bi4n FoRe\/Er 
+elif [ -d "/usr/share/keymaps" -a -d "/usr/share/consolefonts" ]
+    then #    
+    compctl -g '/usr/share/keymaps/*(:t)' 
+    loadkeys 
+    compctl -g '/usr/share/consolefonts/*(:t)' 
+    setfont 
+fi 
+
+compctl -g '*(-/)' -d -x 'c[-1,-name]' -f - 'c[-1,-newer]' -f \
+         - 'c[-1,-{,n}cpio]' -f - 'c[-1,- exec ]' -c - 'c[-1,-ok]' \
+         -c - 'c[-1,-user]' -u - 'c[-1,-group]'  - 'c[-1,-fstype]' \
+         -k '(nfs 4.2)' - 'c[-1,- type ]' -k '(b c d f l p s)' - 's[-]' \
+         -k '(name newer cpio ncpio exec ok user group fstype type atime ctime depth inum ls mtime nogroup nouser perm print prune size xdev)' -- find 
+
+compctl -k '(-help -def -display -cursor -cursor_name -bitmap -mod - fg -bg -grey -rv -solid -name)' -x \
+        'c[-1,-display]' -s '$DISPLAY' -k hosts -S ':0' - \
+        'c[-1,-cursor]' -f -  'c[-2,-cursor]' -f - \
+        'c[-1,-bitmap]' -g '/usr/include/X11/bitmaps/*' - \
+        'c[-1,-cursor_name]' -K Xcursor - \
+        'C[-1,-(solid| fg |bg )]' -K Xcolours -- xsetroot 
+
+compctl -k '( if of conv ibs obs bs cbs files skip file seek count)' \
+        -S '=' -x 's[ if =], s[of=]' -f - 'C[0,conv=*,*] n[-1,,], s[conv=]' \
+        -k '(ascii ebcdic ibm block unblock lcase ucase swap noerror sync)' \
+        -q -S ',' - 'n[-1,=]' -X '<number>'  -- dd 
+
+compctl -s '$(rpm -qa)' -x \
+        's[--]' -s 'oldpackage percent replacefiles replacepkgs noscripts root excludedocs includedocs test upgrade test clean short-circuit sign recompile rebuild resign querytags queryformat version help quiet rcfile force hash ' - \
+        's[ftp:]' -P '//' -s '$(<~/.zsh/ftphosts)' -S '/' - \
+        'c[-1,--root]' -g '*(-/)' - \
+        'c[-1,--rcfile]' -f - \
+        'p[1] s[-b],s[-t]' -k '(p l c i b a)' - \
+        'C[-1,-b*]' -K compctl_spec -Q -S '' - \
+        'C[-1,-t*]' -K compctl_targz -Q -S '' - \
+        'c[-1,--queryformat] N[-1,{]' \
+                -s ' "${${(f)$(rpm --querytags)}#RPMTAG_}" ' -S '}' - \
+        'W[1,-q*] C[-1,-([^-]*|)f*]' -f - \
+        'W[1,-([^-]*|)([iU])*], W[1,-q*] C[-1,-([^-]*|)p*], r[--rebuild,qux][--recompile,qux]' \
+          -K compctl_rpm -Q -S '' -- \
+  rpm 
+
+compctl -g '*.(tar|tgz|tar.gz|tar.Z|tar.z)' + -g '*(-/)' gnutar gtar tar 
+
+compctl -g '*.(gz|z|Z|t[agp]z|tarZ|tz)' + -g '*(-/)' gunzip gzcat zcat 
+
+compctl -g '*.bz2' + -g '*(-/)' bunzip2 bunzip bzcat bzless 
+
+compctl -g '*.Z' + -g '*(-/)' uncompress zmore 
+
+compctl -g '*.F' + -g '*(-/)' melt fcat compctl -g '*.dvi' -x 's[-]' -k '(nogrey gamma margins sidemargin topmargin offsets xoffset yoffset paper altfont expert hush hushspecials hushchars hushchecksums display geometry icongeometry iconic keep copy thorough nopostscript noghostscript version maketexpk mfmode)' -- xdvi 
+compctl -s "\$(awk '/^[a-zA-Z0-9][^     ]+:/ {print \$1}' FS=: [mM]akefile)" \
+  -x 'c[-1,-f]' -f -- make gmake pmake 
+
+compctl -g '*.(e|E|)(ps|PS)' + -g '*(-/)' \
+        gs ghostview nup psps pstops psmulti psnup psselect 
+
+compctl -g '*.tex*' + -g '*(-/)' {,la,gla,ams{la,},{g,}sli}tex texi2dvi 
+
+compctl -g '*.dvi' + -g '*(-/)' dvips 
+
+compctl -g 'RCS/*(:s@RCS/@@:s/,v//)' co rlog rcs rcsdiff 
+
+compctl -g '*.([cCmisSoak]|cc|cxx|cpp|ii|k[ih])' -x \
+        's[-l]' -s '${(s.:.)^LD_LIBRARY_PATH}/lib*.a(:t :r:s/lib//)' - \
+        'c[-1,-x]' -k '(none c objective-c c-header c++ cpp-output assembler assembler-with-cpp)' - \
+        'c[-1,-o]' -f - \
+        'C[-1,-i(nclude|macros)]' -g '*.h' - \
+        'C[-1,-i(dirafter|prefix)]' -g '*(-/)' - \
+        's[-B][-I][-L]' -g '*(-/)' - \
+        's[-fno-],s[-f]' -k '(all-virtual cond-mismatch dollars- in -identifiers enum-int-equiv external-templates asm builtin strict-prototype signed-bitfields signd-char this-is-variable unsigned-bitfields unsigned-char writable-strings syntax-only pretend-float caller-saves     cse-follow-jumps cse-skip-blocks delayed-branch elide-constructors expensive-optimizations fast-math float-store force-addr force-mem inline- functions keep-inline- functions memoize-lookups default-inline defer-pop function -cse inline peephole omit-frame-pointer rerun-cse-after-loop schedule-insns schedule-insns2 strength-reduce thread-jumps unroll-all-loops unroll-loops)' - \
+        's[-g]' -k '(coff xcoff xcoff+ dwarf dwarf+ stabs stabs+ gdb)' - \
+        's[-mno-][-mno][-m]' -k '(486 soft-float fp-ret- in -387)' - \
+        's[-Wno-][-W]' -k '(all aggregate- return cast-align cast-qual char-subscript comment conversion enum-clash error format id-clash-6 implicit inline missing-prototypes missing-declarations nested-externs import parentheses pointer-arith redundant-decls return -type shadow strict-prototypes switch template-debugging traditional trigraphs uninitialized unused write-strings)' - \
+        's[-]' -k '(pipe ansi traditional traditional-cpp trigraphs pedantic pedantic-errors nostartfiles nostdlib static shared symbolic include imacros idirafter iprefix iwithprefix nostdinc nostdinc++ undef)' \
+        -X 'Use "-f" ,"-g" ,"-m" or "-W" for more options' -- gcc g++
+
+compctl -f -x 'C[-1,-*c]' -c - 'C[-1,[-+]*o]' -o -- bash ksh sh zsh compctl -u -x 'w[1,-]p[3,-1]' -l sh - 'w[1,-]' -u - 'p[2,-1]' -l sh -- su
+
+man_var() {
+    man_pages=( ${^$(man -w | sed 's/:/ /g')}/man*/*(N :t:r) ) 
+    compctl -k man_pages -x 'C[-1,-P]' -m - \
+	'R[-*l*,;]' -- + -g '*.(man|[0-9nlpo](|[a-z])) *(-/)' man
+    reply=( $man_pages )
+} 
+compctl -K man_var -x 'C[-1,-P]' -m - \
+    'R[-*l*,;]' -- + -g '*.(man|[0-9nlpo](|[a-z])) *(-/)' man
+
+man_glob () { 
+    local aread -cA a 
+    if [[ $a[2] = -s ]]
+	then # Or [[ $a[2] = [0-9]* ]] for BSD 
+	reply=( ${^$(man -w | sed 's/:/ /g')}/man$a[3]/$1*$2(N :t:r) ) 
+    else 
+	reply=( ${^$(man -w | sed 's/:/ /g')}/man*/$1*$2(N :t:r) ) 
+    fi 
+}
+
+compctl -K man_glob -x 'C[-1,-P]' -m - \
+        'R[-*l*,;]' -g '*.(man|[0-9nlpo](|[a-z]))' + -g '*(-/)' -- man 
+
+
+compctl -k '( play   stop    open    close   pause   resume  ff \
+              rew     sites next   prev    getvol  setvol status \
+              rndplay slot    list info   tracks ext     refresh \
+              device )' cdcd 

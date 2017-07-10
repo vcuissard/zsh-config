@@ -1,0 +1,56 @@
+#!/bin/zsh
+## alias for  in /Users/reeb
+##
+## Made by Vincent Cuissard
+## Login   <reeb@epita.fr>
+##
+## Started on  Tue Jun  3 22:22:51 2003 Vincent Cuissard
+## Last update Fri Sep 30 17:29:42 2005 CUISSARD Vincent
+##
+
+SYNC_SERVER=gcc
+IGNORE="-ignore='Regex (\.ns|mtmp|\.unison|unison\.log|.*\.(sw[uop]|o|cm[iox])|\.mozilla|\.phoenix|\.X.*|\.jnewsrc|\.history|local|bin|mbin|.*/\.depend)'"
+alias etags-dp="etags"
+alias nmap="sudo nmap -v -O -sS -F"
+alias ll='ls -lp'
+alias la='ls -alp'
+alias li='ls -lip'
+alias rm='rm'
+alias cp='cp'
+alias mv='mv'
+alias df='df -Th'
+
+alias l='ls -l'
+alias ch-='chmod -R go-rwx'
+alias ch+='chmod -R go+X+r-w'
+alias chx='chmod -R go+X-rw'
+alias diru='ls -d * .??* 2> /dev/null | xargs du -cs | sort -n | more'
+alias rd='rmdir'
+alias md='mkdir'
+alias c='clear'
+alias m='$PAGER'
+alias f='finger'
+alias p='ping -c 1'
+alias r=' fc -e - '
+alias h=' history '
+alias j=' jobs -l'
+alias L=' logout '
+alias E=' exit '
+
+function lm
+{
+      l $* | $PAGER
+}
+
+function llm
+{
+      ll $* | $PAGER
+}
+
+function lam
+{
+      la $* | $PAGER
+}
+
+alias nmap="nmap -v -O -sS -F"
+alias ssh='ssh -A'

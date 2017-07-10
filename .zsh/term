@@ -1,0 +1,46 @@
+#!/bin/zsh
+## term for  in /Users/reeb
+## 
+## Made by Vincent Cuissard
+## Mail    <vincent.cuissard@gmail.com>
+## 
+## Started on  Tue Jun  3 22:25:08 2003 Vincent Cuissard
+## Last update Tue Jun  3 22:25:16 2003 Vincent Cuissard
+##
+
+
+set convert-meta off # Don't strip high bit when reading or displaying. 
+set input-meta on 
+set output-meta on 
+
+function common_terms () { 
+    bindkey "\e[2~" quoted-insert 
+    bindkey "\e[3~" delete-char 
+    bindkey "\e[5~" beginning-of-history 
+    bindkey "\e[6~" end-of-history 
+} # Make the Home, End, and Delete keys work on common terminals. 
+if [[ "$TERM" == "linux" ]] ; then 
+    common_terms 
+    bindkey "\e[1~" beginning-of-line 
+    bindkey "\e[4~" end-of-line 
+elif [[ "$TERM" == "rxvt" ]] ; then 
+    common_terms 
+    bindkey "\e[7~" beginning-of-line 
+    bindkey "\e[8~" end-of-line 
+elif [[ "$TERM" == xterm* ]] ; then 
+    common_terms 
+    bindkey "\e[1~" beginning-of-line
+    bindkey "\e[4~" end-of-line 
+fi
+bindkey -s '^X^Z' '%-^M'
+bindkey '^[e' expand-cmd-path
+bindkey -s '^X?' '\eb=\ef\C-x*'
+bindkey '^[^I' reverse-menu-complete
+bindkey '^[p' history-beginning-search-backward 
+bindkey '^[n' history-beginning-search-forward 
+bindkey '^W' kill -region bindkey '^I' expand-or-complete-prefix 
+bindkey -s '^[[Z' '\t' 
+if which setterm > /dev/null ; then
+    setterm -hbcolor bright white
+    setterm -ulcolor cyan
+fi 

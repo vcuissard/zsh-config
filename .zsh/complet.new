@@ -1,0 +1,87 @@
+#!/bin/zsh
+## complet.new for  in /Users/reeb
+## 
+## Made by Vincent Cuissard
+## Mail    <vincent.cuissard@gmail.com>
+## 
+## Started on  Tue Jun  3 22:22:29 2003 Vincent Cuissard
+## Last update Tue Jun  3 22:43:12 2003 Vincent Cuissard
+##
+
+autoload mere zed zfinit
+
+zmodload zsh/complist
+bindkey m menu-select
+
+autoload incremental-complete-word
+zle -N incremental-complete-word
+bindkey i incremental-complete-word
+
+autoload insert-files
+zle -N insert-files
+bindkey j insert-files
+
+_compdir=/usr/share/zsh/functions
+
+[[ -z $fpath[(r)$_compdir] ]] && fpath=($fpath $_compdir) 
+autoload -U compinit
+compinit
+
+zstyle ':completion:*' auto-description 'specify: %d'
+zstyle ':completion:*' completer _complete _correct _approximate
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' insert-unambiguous true
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'l:|=* r:|=*' 'r:|[._-]=* r:|=*'
+zstyle ':completion:*' max-errors 2
+zstyle ':completion:*' menu select=1
+zstyle ':completion:*' original true
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*' verbose true
+zstyle ':completion:*:processes' list-colors '=(#b)(?????)(#B)?????????????????????????????????([^ ]#/)#(#b)([^ /]#)*=00=01;31=01;33'
+
+
+zstyle ':*' completer _complete _correct _approximate _prefix
+zstyle '::prefix-1:*' completer _complete
+zstyle ':incremental:*' completer _complete _correct
+zstyle ':predict:*' completer _complete 
+zstyle ':*' cache- path ~/.zsh/.cache- path 
+zstyle ':*' expand 'yes'
+zstyle ':*' squeeze-slashes 'yes' # Include non-hidden directories in globbed file completions # for certain commands 
+zstyle '::complete:*' \
+  tag-order 'globbed-files directories' all-files
+zstyle '::complete:*:tar :directories' file-patterns '*~.*(-/)' # Separate matches into groups 
+zstyle ':*:matches' group 'yes' # Describe each match group. # This one assumes that your terminal has a dark background. # 
+zstyle '*:descriptions' format "$fg_bold[white]%d$fg_no_bold[white]" 
+zstyle ':*:descriptions' format '%{[32m%}%{[01m%}--=={ %b%{[33m%}%d%{[32m%}%{[01m%} }==--%{[0m%}' # Messages/warnings format 
+zstyle ':*:messages' format '%{[32m%}%{[01m%}--=={ %b%{[33m%}%d%{[0m%'
+zstyle ':*:warnings' format '%{[32m%}%{[01m%}--=={ %b%{[33m%} no match for : %d%{[0m%' # Describe options in full 
+zstyle ':*:options' description 'yes'
+zstyle ':*:options' auto-description '%d' # hosts zstyle ':*' hosts $hostnames # utilisateurs zstyle ':*:my-accounts' users-hosts $my_accounts
+zstyle ':*:other-accounts' users-hosts $other_accounts
+
+zstyle ':*: history -words' stop 'verbose'
+zstyle ':*: history -words' remove_all_dups 'yep'
+
+zstyle ':*:*:telnet:*' hosts-ports-users $telnet_hosts_ports_use # 
+zmodload -i zsh/complist 
+zstyle ':completion:*' list-colors ''
+zstyle ':completion:*:*: kill :*:processes' list-colors \
+  '=( #b) #([0-9]#)*=0=01;31' # show directories in yellow 
+zstyle ':completion:*' list-colors 'di=01;33' 
+zstyle -e ':completion:*:ssh:*' hosts \
+        'reply=($(sed -e "/^#/d" -e "s/ .*\$//" -e "s/,/ /g" \
+                /etc/ssh_known_hosts ~/.ssh/known_hosts 2>/dev/null))' 
+zstyle -e ':completion:*:scp:*' hosts \
+        'reply=($(sed -e "/^#/d" -e "s/ .*\$//" -e "s/,/ /g" \
+                /etc/ssh_known_hosts ~/.ssh/known_hosts 2>/dev/null))' 
+zstyle -e ':completion:*:ping:*' hosts \
+        'reply=($(cat ~/.known_ping))'
+
+zstyle -e ':completion:*:ftp:*' hosts \
+        'reply=($(cat ~/.known_ftp))'
+
+compctl -k '( play   stop    open    close   pause   resume  ff \
+              rew     sites next   prev    getvol  setvol status \
+              rndplay slot    list info   tracks ext     refresh \
+              device )' cdcd 
