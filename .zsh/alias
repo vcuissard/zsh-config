@@ -19,7 +19,7 @@ alias rm='rm'
 alias cp='cp'
 alias mv='mv'
 alias df='df -Th'
-
+alias ls='ls -G'
 alias l='ls -l'
 alias ch-='chmod -R go-rwx'
 alias ch+='chmod -R go+X+r-w'
