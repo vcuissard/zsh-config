@@ -19,7 +19,13 @@ alias rm='rm'
 alias cp='cp'
 alias mv='mv'
 alias df='df -Th'
-alias ls='ls -G'
+
+`ls -G > /dev/null 2>&1`
+if [ $? -eq 0 ]; then
+    alias ls='ls -G'
+else
+    alias ls='ls --color=auto'
+fi
 alias l='ls -l'
 alias ch-='chmod -R go-rwx'
 alias ch+='chmod -R go+X+r-w'
