@@ -173,3 +173,6 @@ setopt SH_WORD_SPLIT
 
 export EMAIL="vincent.cuissard@gmail.com"
 export EDITOR=emacs
+
+# Add SSH Key
+ssh-add -K
